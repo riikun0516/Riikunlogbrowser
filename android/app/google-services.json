@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "667145011741",
+    "project_id": "riikunlogbrowser",
+    "storage_bucket": "riikunlogbrowser.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667145011741:android:6bc280ca71fa5e0b5b7cf4",
+        "android_client_info": {
+          "package_name": "jp.riikunjp.riikunlogbrowser"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvSuDrNVEx80CYsK107cNRqlSC_Yw1E14"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

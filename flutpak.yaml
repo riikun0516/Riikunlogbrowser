@@ -1,0 +1,19 @@
+output: flatpak
+
+flutter:  # autoresolve to latest stable release
+
+
+foreign-deps-ref: v0.8.1
+
+repo-url: https://github.com/riikun0516/riikunlogbrowser.git
+
+app-id: jp.riikunjp.riikunlogbrowser
+runtime-version: '25.08'
+command: riikunlogbrowser
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --talk-name=org.freedesktop.portal.OpenURI
