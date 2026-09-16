@@ -22,11 +22,14 @@ jobs:
           sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
           sudo apt-get update && sudo apt-get install -y xvfb
           timeout 10 xvfb-run --auto-servernum riikunlogbrowser > /tmp/run.log 2>&1 || true
-          echo "----- 実行ログ -----"
-          cat /tmp/run.log
+          echo "----- mpv関連のLD_DEBUGログ抜粋 -----"
+          grep -i "mpv" /tmp/run.log || echo "(mpvを含む行が見つかりませんでした)"
+          echo "----- エラー部分抜粋 -----"
+          grep -B2 -A2 -i "error\|cannot\|undefined symbol\|fatal" /tmp/run.log | grep -i "mpv" -A2 -B2 || true
           echo "---------------------"
+
           if grep -qi "Cannot find libmpv" /tmp/run.log; then
-            echo "::error::media_kit/libmpvの初期化に失敗しています"
+            echo "::error::media_kit/libmpvの初期化に失敗しています。詳細は上記ログを確認してください"
             exit 1
           else
             echo "media_kit関連のエラーは検出されませんでした"
