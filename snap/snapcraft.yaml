@@ -53,6 +53,16 @@ parts:
       # Ubuntu 24.04のlibmpv.so.2向けに互換シンボリックリンクを追加する
       ln -sf libmpv.so.2 "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/libmpv.so.1"
       ln -sf libmpv.so.2 "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/libmpv.so"
+      # libblas3/liblapack3はupdate-alternativesでシンボリックリンクを作る前提のパッケージだが、
+      # Snapcraftのステージングではそれが実行されないため手動で補う
+      for lib in blas lapack; do
+        real=$(find "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/$lib" -maxdepth 1 -name "lib${lib}.so.3*" 2>/dev/null | head -n1)
+        echo "DEBUG: lib${lib} candidate = $real"
+        if [ -n "$real" ]; then
+          ln -sf "$lib/$(basename "$real")" "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/lib${lib}.so.3"
+        fi
+      done
+      ls -la "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/" | grep -i "blas\|lapack" || echo "DEBUG: no blas/lapack files found at top level"
     prime:
       # gnome拡張機能が既に提供しているため、二重に含めるとバージョン衝突を起こす
       - -usr/lib/*/libglib-2.0*
