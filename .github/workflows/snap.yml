@@ -17,6 +17,21 @@ jobs:
         uses: snapcore/action-build@v1
         id: build
 
+      - name: Smoke test (install & launch on real Ubuntu, headless)
+        run: |
+          sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
+          sudo apt-get update && sudo apt-get install -y xvfb
+          timeout 10 xvfb-run --auto-servernum riikunlogbrowser > /tmp/run.log 2>&1 || true
+          echo "----- 実行ログ -----"
+          cat /tmp/run.log
+          echo "---------------------"
+          if grep -qi "Cannot find libmpv" /tmp/run.log; then
+            echo "::error::media_kit/libmpvの初期化に失敗しています"
+            exit 1
+          else
+            echo "media_kit関連のエラーは検出されませんでした"
+          fi
+
       - name: Upload snap artifact
         uses: actions/upload-artifact@v4
         with:
