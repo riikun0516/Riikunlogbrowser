@@ -15,7 +15,14 @@ import 'package:upgrader/upgrader.dart'; //
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); //
-  MediaKit.ensureInitialized(); //
+  if (Platform.isLinux) {
+    // Snap環境では自動検出が失敗するため、実際に同梱しているパスを明示的に指定する
+    MediaKit.ensureInitialized(
+      libmpv: '${Platform.environment['SNAP'] ?? ''}/usr/lib/x86_64-linux-gnu/libmpv.so.2',
+    );
+  } else {
+    MediaKit.ensureInitialized(); //
+  }
 
   runApp(const MyApp());
 }
