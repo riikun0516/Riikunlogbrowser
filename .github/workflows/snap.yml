@@ -22,17 +22,15 @@ jobs:
           sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
           sudo apt-get update && sudo apt-get install -y xvfb
           timeout 10 xvfb-run --auto-servernum riikunlogbrowser > /tmp/run.log 2>&1 || true
-          echo "----- mpv関連のLD_DEBUGログ抜粋(前後の文脈つき) -----"
-          grep -A5 "find library=libmpv" /tmp/run.log || echo "(mpvを含む行が見つかりませんでした)"
-          echo "----- undefined symbol / cannot open 系のエラー全体 -----"
-          grep -i "undefined symbol\|cannot open shared object\|error while loading" /tmp/run.log || echo "(該当なし)"
+          echo "----- 実行ログ -----"
+          cat /tmp/run.log
           echo "---------------------"
 
-          if grep -qi "Cannot find libmpv" /tmp/run.log; then
-            echo "::error::media_kit/libmpvの初期化に失敗しています。詳細は上記ログを確認してください"
+          if grep -qi "Cannot find libmpv\|symbol lookup error" /tmp/run.log; then
+            echo "::error::起動時にエラーが検出されました。上記ログを確認してください"
             exit 1
           else
-            echo "media_kit関連のエラーは検出されませんでした"
+            echo "エラーは検出されませんでした"
           fi
 
       - name: Upload snap artifact
