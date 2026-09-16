@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
           sudo apt-get update && sudo apt-get install -y xvfb
-          timeout 10 xvfb-run --auto-servernum riikunlogbrowser > /tmp/run.log 2>&1 || true
+          timeout 10 xvfb-run --auto-servernum riikunlog-browser > /tmp/run.log 2>&1 || true
           echo "----- 実行ログ -----"
           cat /tmp/run.log
           echo "---------------------"
@@ -39,14 +39,11 @@ jobs:
           name: riikunlogbrowser-linux-snap
           path: ${{ steps.build.outputs.snap }}
 
-      # タグ付けした時だけSnap Storeへ自動公開したい場合は、
-      # 下記のコメントを外し、GitHub Secretsに SNAPCRAFT_STORE_CREDENTIALS を設定してください。
-      # 発行方法: snapcraft export-login --snaps=riikunlogbrowser --channels=stable exported.txt
-      #
-      # - name: Release to the Snap Store
-      #   uses: snapcore/action-publish@v1
-      #   env:
-      #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
-      #   with:
-      #     snap: ${{ steps.build.outputs.snap }}
-      #     release: stable
+      - name: Release to the Snap Store
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: ${{ steps.build.outputs.snap }}
+          release: stable

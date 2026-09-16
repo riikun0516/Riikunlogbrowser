@@ -1,7 +1,12 @@
-name: riikunlogbrowser
+name: riikunlog-browser
+title: りーろぐブラウザ
 base: core24
 version: '2026.09.12'
 summary: ブログ・ポッドキャスト・お知らせをひとつに
+license: proprietary
+contact: customer.center@radiostrike.jp
+website: https://www.radiostrike.jp
+source-code: https://github.com/riikun0516/riikunlogbrowser
 description: |
   「りーろぐブラウザ」は、個人ブログ「りーろぐ」およびポッドキャスト番組
   「RadioStrike」のリスナー・読者向けに、両方のコンテンツを1つのアプリで
@@ -21,7 +26,7 @@ platforms:
   amd64:
 
 apps:
-  riikunlogbrowser:
+  riikunlog-browser:
     command: riikunlogbrowser
     extensions:
       - gnome
