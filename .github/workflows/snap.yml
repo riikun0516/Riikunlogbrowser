@@ -1,0 +1,36 @@
+name: Build Snap
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+jobs:
+  build-snap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: build
+
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: riikunlogbrowser-linux-snap
+          path: ${{ steps.build.outputs.snap }}
+
+      # タグ付けした時だけSnap Storeへ自動公開したい場合は、
+      # 下記のコメントを外し、GitHub Secretsに SNAPCRAFT_STORE_CREDENTIALS を設定してください。
+      # 発行方法: snapcraft export-login --snaps=riikunlogbrowser --channels=stable exported.txt
+      #
+      # - name: Release to the Snap Store
+      #   uses: snapcore/action-publish@v1
+      #   env:
+      #     SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+      #   with:
+      #     snap: ${{ steps.build.outputs.snap }}
+      #     release: stable

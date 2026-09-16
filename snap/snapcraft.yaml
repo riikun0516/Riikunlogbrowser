@@ -1,0 +1,45 @@
+name: riikunlogbrowser
+base: core24
+version: '2026.09.12'
+summary: ブログ・ポッドキャスト・お知らせをひとつに
+description: |
+  「りーろぐブラウザ」は、個人ブログ「りーろぐ」およびポッドキャスト番組
+  「RadioStrike」のリスナー・読者向けに、両方のコンテンツを1つのアプリで
+  手軽に楽しめるようにするコンパニオンアプリです。
+
+  ・りーろぐ: ブログ記事の一覧・詳細を閲覧
+  ・RadioStrike: ポッドキャストのエピソード一覧・再生
+  ・Webブラウザ: システムの既定ブラウザでサイトを開く
+  ・お知らせ: 運営からのお知らせを閲覧
+
+  ログインやアカウント登録は一切不要です。
+
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
+
+apps:
+  riikunlogbrowser:
+    command: riikunlogbrowser
+    extensions:
+      - gnome
+    plugs:
+      - network          # りーろぐ/お知らせのAPI取得、ポッドキャスト音声のストリーミング
+      - audio-playback    # RadioStrikeの音声再生(media_kit/mpv)
+      - desktop           # 既定のWebブラウザを開くために必要(xdg-open相当)
+      - desktop-legacy
+      - wayland
+      - x11
+
+parts:
+  riikunlogbrowser:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart
+    build-packages:
+      - libmpv-dev
+      - mpv
+    stage-packages:
+      - libmpv2
