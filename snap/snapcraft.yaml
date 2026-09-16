@@ -27,7 +27,6 @@ apps:
       - gnome
     environment:
       LD_LIBRARY_PATH: $SNAP/usr/lib/x86_64-linux-gnu:$SNAP/usr/lib:${LD_LIBRARY_PATH}
-      LD_DEBUG: libs,files
     plugs:
       - network          # りーろぐ/お知らせのAPI取得、ポッドキャスト音声のストリーミング
       - audio-playback    # RadioStrikeの音声再生(media_kit/mpv)
@@ -46,6 +45,12 @@ parts:
       - mpv
     stage-packages:
       - libmpv2
+    override-prime: |
+      craftctl default
+      # media_kitはlibmpv.so.1という名前を決め打ちで探すため、
+      # Ubuntu 24.04のlibmpv.so.2向けに互換シンボリックリンクを追加する
+      ln -sf libmpv.so.2 "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/libmpv.so.1"
+      ln -sf libmpv.so.2 "$CRAFT_PRIME/usr/lib/x86_64-linux-gnu/libmpv.so"
     prime:
       # gnome拡張機能が既に提供しているため、二重に含めるとバージョン衝突を起こす
       - -usr/lib/*/libglib-2.0*

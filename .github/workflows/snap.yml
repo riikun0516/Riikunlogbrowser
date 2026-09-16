@@ -22,13 +22,16 @@ jobs:
           sudo snap install --dangerous "${{ steps.build.outputs.snap }}"
           sudo apt-get update && sudo apt-get install -y xvfb
           timeout 10 xvfb-run --auto-servernum riikunlogbrowser > /tmp/run.log 2>&1 || true
-          cp /tmp/run.log run.log
+          echo "----- 実行ログ -----"
+          cat /tmp/run.log
+          echo "---------------------"
 
-      - name: Upload smoke test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-test-log
-          path: run.log
+          if grep -qi "Cannot find libmpv\|symbol lookup error" /tmp/run.log; then
+            echo "::error::起動時にエラーが検出されました。上記ログを確認してください"
+            exit 1
+          else
+            echo "エラーは検出されませんでした"
+          fi
 
       - name: Upload snap artifact
         uses: actions/upload-artifact@v4
