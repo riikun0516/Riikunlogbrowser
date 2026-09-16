@@ -45,3 +45,8 @@ parts:
       - mpv
     stage-packages:
       - libmpv2
+
+lint:
+  ignore:
+    - unused-library:
+        - usr/lib/*/libmpv.so*
