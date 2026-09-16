@@ -45,6 +45,8 @@ parts:
       - mpv
     stage-packages:
       - libmpv2
+      - libblas3
+      - liblapack3
     override-prime: |
       craftctl default
       # media_kitはlibmpv.so.1という名前を決め打ちで探すため、
