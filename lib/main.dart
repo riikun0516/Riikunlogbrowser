@@ -120,7 +120,7 @@ class HomePage extends StatelessWidget {
                       showLicensePage(
                         context: context,
                         applicationName: 'りーろぐブラウザ', //
-                        applicationVersion: '2026.04.07-rev0', //
+                        applicationVersion: '2026.09.26-rev0', //
                       );
                     } else if (value == 'privacy') {
                       Navigator.of(context).push(MaterialPageRoute(

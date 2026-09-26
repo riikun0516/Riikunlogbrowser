@@ -21,11 +21,22 @@ class _PodcastListPageState extends State<PodcastListPage> {
   }
 
   Future<RssFeed> fetchRssFeed() async {
-    final response = await http.get(Uri.parse('https://wp.radiostrike.jp/feed/podcast/radiostrike'));
+    final response = await http.get(
+      Uri.parse('https://wp.radiostrike.jp/feed/podcast/radiostrike'),
+      headers: {
+        // WordPress側のBot対策(WAF等)が、ブラウザらしくないUser-Agentを
+        // ブロックすることがあるため、通常のブラウザに近いUser-Agentを送る
+        'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 '
+                '(KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+      },
+    );
     if (response.statusCode == 200) {
       return RssFeed.parse(response.body);
     } else {
-      throw Exception('Failed to load RSS feed');
+      throw Exception(
+          'Failed to load RSS feed (status: ${response.statusCode})');
     }
   }
 
@@ -39,13 +50,9 @@ class _PodcastListPageState extends State<PodcastListPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            // ▼▼▼ ここから修正 ▼▼▼
             return SafeArea(child: Center(child: Text('エラー: ${snapshot.error}')));
-            // ▲▲▲ ここまで修正 ▲▲▲
           } else if (!snapshot.hasData || snapshot.data!.items == null) {
-            // ▼▼▼ ここから修正 ▼▼▼
             return const SafeArea(child: Center(child: Text('記事がありません')));
-            // ▲▲▲ ここまで修正 ▲▲▲
           }
 
           final feed = snapshot.data!;
