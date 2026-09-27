@@ -47,12 +47,38 @@ flutter doctor --android-licenses
 
 `key.pfx` が必要(`pubspec.yaml` の `msix_config` 参照)。パスワードが平文でファイルに入っているため、リポジトリ外で厳重に管理すること。
 
-### 4. 確認
+`msix_config.logo_path` は `pubspec.yaml` からの相対パス(`"logo.png"`)で指定すること。以前 `D:/riikunlogbrowser/logo.png` のような絶対パス・ドライブ固定になっていたことがあり、別のマシン・別のドライブにプロジェクトを置くとビルドが失敗する原因になっていた。
+
+### 4. 動作確認(デバッグ用途のみ)
+
+以下はあくまで**開発中の動作確認用**であり、実際の配布物ではない。
 
 ```powershell
 flutter doctor -v
 flutter run -d windows
 ```
+
+`flutter build windows` も同様に、生成される実行ファイル一式(`build/windows/x64/runner/Release/`)はそのままでは配布しない(署名もストア用パッケージ化もされていない)。
+
+### 5. 実際のリリースビルド(MSIX配布)
+
+配布物は **MSIX形式**でパッケージ化する。`pubspec.yaml` に `msix_config` を設定済みなら、以下の1コマンドで完結する(内部で `flutter build windows` 相当のビルドも実行される)。
+
+```powershell
+dart run msix:create
+```
+
+成功すると `build/windows/x64/runner/Release/<アプリ名>.msix` が生成される。これが配布・Microsoft Store申請用の実体。
+
+**動作確認(インストールしてみる)**
+
+```powershell
+Add-AppxPackage -Path build\windows\x64\runner\Release\riikunlogbrowser.msix
+```
+
+**Microsoft Storeへの申請**は、Partner Centerにこの `.msix` ファイルをアップロードする形になる(Partner Center側の操作は別途)。
+
+**バージョンを上げてビルドし直す場合**は、`pubspec.yaml` の `version:` と `msix_config.msix_version` の両方を更新してから `dart run msix:create` を実行すること(片方だけ上げ忘れるとストア申請時にリジェクトされる)。
 
 ---
 

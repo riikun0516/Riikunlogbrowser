@@ -3,7 +3,7 @@ description: riikunlogbrowser
 
 publish_to: 'none'
 
-version: 2026.09.27+1
+version: 2026.09.26+1
 
 environment:
   sdk: '>=2.19.4 <4.0.0'
@@ -78,8 +78,8 @@ msix_config:
   publisher: "CN=F5E968CF-9F93-40A3-BFD8-31060FEBE4CE"
   certificate_path: "key.pfx"
   certificate_password: "kkgames0"
-  msix_version: 2026.9.27.0
-  logo_path: "D:/riikunlogbrowser/logo.png"
+  msix_version: 2026.4.7.0
+  logo_path: "logo.png"
 
 flutter_launcher_icons:
   image_path: "logo.png"
