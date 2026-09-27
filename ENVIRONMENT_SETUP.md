@@ -37,11 +37,13 @@ flutter upgrade
 
 ### 2. Android SDKライセンス
 
-```powershell
-flutter doctor --android-licenses
+**注意**: 現在のFlutter/Android SDKでは、`flutter doctor --android-licenses`は非推奨になっており、実行すると以下のように表示されるだけで**何もする必要がない**。
+
+```
+Warning: The --licenses option is no longer needed.
 ```
 
-うまく通らない場合、ライセンスファイルを手動で `C:\Users\<ユーザー名>\AppData\Local\Android\Sdk\licenses\` に配置する必要がある場合がある。
+このコマンド自体を実行する必要はない。もし`flutter doctor`でAndroidライセンス関連の警告が出続ける場合は、Android Studio内の「SDK Manager」画面から該当のライセンスに同意する形になる(コマンドラインでの一括同意が廃止され、GUIでの操作に一本化された)。
 
 ### 3. MSIX(ストア配布)用証明書
 
