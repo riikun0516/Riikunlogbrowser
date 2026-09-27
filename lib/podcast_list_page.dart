@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:webfeed_plus/webfeed_plus.dart';
+import 'package:xml/xml.dart' as xml;
 import 'podcast_player_page.dart';
 import 'app_colors.dart';
 
@@ -13,6 +14,9 @@ class PodcastListPage extends StatefulWidget {
 
 class _PodcastListPageState extends State<PodcastListPage> {
   Future<RssFeed>? _feedFuture;
+  // webfeed_plusはWordPressが全文を格納する<content:encoded>タグに対応していないため、
+  // 生のXMLを直接読み取って、記事(link/guid)ごとの全文をここに保持する。
+  final Map<String, String> _fullContentByKey = {};
 
   @override
   void initState() {
@@ -33,11 +37,55 @@ class _PodcastListPageState extends State<PodcastListPage> {
       },
     );
     if (response.statusCode == 200) {
+      _extractFullContent(response.body);
       return RssFeed.parse(response.body);
     } else {
       throw Exception(
           'Failed to load RSS feed (status: ${response.statusCode})');
     }
+  }
+
+  // <content:encoded>(WordPressの全文フィールド)を、<link>または<guid>をキーにして抜き出す
+  void _extractFullContent(String rawXml) {
+    try {
+      final doc = xml.XmlDocument.parse(rawXml);
+      for (final item in doc.findAllElements('item')) {
+        final linkElements = item.findElements('link');
+        final guidElements = item.findElements('guid');
+        final link =
+            linkElements.isNotEmpty ? linkElements.first.innerText.trim() : null;
+        final guid =
+            guidElements.isNotEmpty ? guidElements.first.innerText.trim() : null;
+        final key = link ?? guid;
+        if (key == null || key.isEmpty) continue;
+
+        final encodedElements = item.findElements(
+          'encoded',
+          namespace: 'http://purl.org/rss/1.0/modules/content/',
+        );
+        final encoded =
+            encodedElements.isNotEmpty ? encodedElements.first.innerText : null;
+        if (encoded != null && encoded.trim().isNotEmpty) {
+          _fullContentByKey[key] = encoded;
+        }
+      }
+    } catch (_) {
+      // 全文の抽出に失敗しても、一覧表示自体は継続させる
+      // (この場合はdescription/itunes:summaryへフォールバックされる)
+    }
+  }
+
+  // 優先順位: content:encoded(全文) > description > itunes:summary(短い要約)
+  String? _descriptionFor(RssItem item) {
+    final key = item.link ?? item.guid;
+    final fullContent = key != null ? _fullContentByKey[key] : null;
+    if (fullContent != null && fullContent.trim().isNotEmpty) {
+      return fullContent;
+    }
+    if (item.description != null && item.description!.trim().isNotEmpty) {
+      return item.description;
+    }
+    return item.itunes?.summary;
   }
 
   @override
@@ -82,7 +130,7 @@ class _PodcastListPageState extends State<PodcastListPage> {
                               title: item.title ?? 'タイトルなし',
                               audioUrl: item.enclosure?.url ?? '',
                               imageUrl: itemImageUrl,
-                              description: item.itunes?.summary,
+                              description: _descriptionFor(item),
                             ),
                           ),
                         );

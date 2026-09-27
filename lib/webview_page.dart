@@ -11,7 +11,7 @@ import 'app_colors.dart';
 // これまで通りアプリ内蔵のWebViewPageに遷移する。
 Future<void> openUrl(BuildContext context, String url) async {
   if (Platform.isLinux) {
-    final uri = Uri.parse(url);
+    final uri = _normalizeUrl(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -34,6 +34,26 @@ class WebViewPage extends StatefulWidget {
 
   @override
   State<WebViewPage> createState() => _WebViewPageState();
+}
+
+// リンクのhrefがスキーム無し(相対URLや"example.com"のような不完全な形)の場合、
+// そのままではWebViewが空白のまま止まってしまうため、ここで補完する。
+Uri _normalizeUrl(String url) {
+  final uri = Uri.parse(url);
+  if (uri.hasScheme) {
+    return uri;
+  }
+  if (url.startsWith('//')) {
+    // "//example.com/path" のようなプロトコル相対URL
+    return Uri.parse('https:$url');
+  }
+  if (url.startsWith('/')) {
+    // サイト内の絶対パスのみのリンクは、正しいドメインが分からないため
+    // ひとまず検索に回す(誤動作より安全)
+    return Uri.parse('https://www.google.com/search?q=$url');
+  }
+  // "example.com/path" のようなスキーム省略のURL
+  return Uri.parse('https://$url');
 }
 
 class _WebViewPageState extends State<WebViewPage> {
@@ -63,13 +83,16 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   Future<void> _initWebView() async {
+    final normalizedInitialUrl =
+        widget.initialUrl != null ? _normalizeUrl(widget.initialUrl!) : null;
+
     if (_isWindows) {
       await _windowsController.initialize();
       _windowsController.url.listen((url) {
         _textController.text = url;
       });
-      if (widget.initialUrl != null) {
-        await _windowsController.loadUrl(widget.initialUrl!);
+      if (normalizedInitialUrl != null) {
+        await _windowsController.loadUrl(normalizedInitialUrl.toString());
       }
     } else {
       // iOS/Android/macOS/Linux共通(それぞれの連合プラグイン実装に自動的に振り分けられる)
@@ -82,26 +105,23 @@ class _WebViewPageState extends State<WebViewPage> {
             },
           ),
         );
-      if (widget.initialUrl != null) {
-        await _mobileController.loadRequest(Uri.parse(widget.initialUrl!));
+      if (normalizedInitialUrl != null) {
+        await _mobileController.loadRequest(normalizedInitialUrl);
       }
     }
 
     if (mounted) {
       setState(() {
         _isWebViewReady = true;
-        if (widget.initialUrl != null) {
-          _textController.text = widget.initialUrl!;
+        if (normalizedInitialUrl != null) {
+          _textController.text = normalizedInitialUrl.toString();
         }
       });
     }
   }
 
   void _loadUrl(String url) {
-    Uri uri = Uri.parse(url);
-    if (!uri.hasScheme) {
-      uri = Uri.parse('https://www.google.com/search?q=$url');
-    }
+    final uri = _normalizeUrl(url);
 
     if (_isWindows) {
       _windowsController.loadUrl(uri.toString());

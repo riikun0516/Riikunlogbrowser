@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart'; // just_audio の代わりに media_kit をインポート
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'dart:async'; // Stream のために必要
 import 'app_colors.dart';
+import 'webview_page.dart';
 
 class PodcastPlayerPage extends StatefulWidget {
   final String title;
@@ -72,20 +74,90 @@ class _PodcastPlayerPageState extends State<PodcastPlayerPage> {
   }
 
   void _showDescriptionDialog() {
-    showDialog(
+    final palette = AppColors.podcast(context);
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('概要'),
-        content: SingleChildScrollView( // 長い説明に対応
-          child: Text(widget.description ?? '概要はありません。'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('閉じる'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                // つまみ(ドラッグハンドル)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12, bottom: 8),
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: palette.icon.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 4, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '概要',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: palette.text,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: palette.icon),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                    child: (widget.description == null ||
+                            widget.description!.trim().isEmpty)
+                        ? Text(
+                            '概要はありません。',
+                            style: TextStyle(
+                              fontSize: 15,
+                              height: 1.7,
+                              color: palette.text.withOpacity(0.9),
+                            ),
+                          )
+                        : HtmlWidget(
+                            widget.description!,
+                            textStyle: TextStyle(
+                              fontSize: 15,
+                              height: 1.7,
+                              color: palette.text.withOpacity(0.9),
+                            ),
+                            onTapUrl: (url) {
+                              openUrl(context, url);
+                              return true;
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
